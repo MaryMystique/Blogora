@@ -1,5 +1,7 @@
 import { Geist, Geist_Mono, Raleway } from "next/font/google";
 import "./globals.css";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 
 const raleway = Raleway({
  subsets: ["latin"],
@@ -8,7 +10,7 @@ const raleway = Raleway({
 
 export const metadata = {
   title: "Blogora | A blog that Write,Share and Connect",
-  description: "Blogora is a fast,developer-friendly blog platform built for the modern web.Whether you're sharing code, tutorials, or opinions-your words lives here.",
+  description: "Blogora is your digital space for discovering fresh perspectives, deep insights, and everyday inspiration. Whether you're here to read, write, or connect, Blogora brings voices together.",
 };
 
 export default function RootLayout({ children }) {
