@@ -4,9 +4,27 @@ import Link from "next/link"
 import React, { useState } from "react"
 import { IoMdCloseCircle } from "react-icons/io";
 import { RxDropdownMenu } from "react-icons/rx";
+import { useSession, signOut } from "next-auth/react";
+import Button from '@mui/material/Button';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+
+
 
 const Navbar = () => {
     const [navOpen, setNavOpen] = useState(false);
+    const { data: session} = useSession();
+
+    const  [anchorEl, setAnchorEl] = useState(null);
+  const open = Boolean(anchorEl);
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+    console.log(session);
 
     const navItems = [
     {
@@ -17,21 +35,13 @@ const Navbar = () => {
     name: "Categories",
     url: "/categories"
     },
-     {
-    name: "Write",
-    url: "/write"
-    },
     {
     name: "Contact",
     url: "/contact"
     },
     {
-    name: "Sign Up",
-    url: "/sign up"
-    },
-    {
-    name: "Login",
-    url: "/auth/login"
+    name: "Blog",
+    url: "/blog",
     },
         
     ]
@@ -52,10 +62,45 @@ const Navbar = () => {
                <Link key={index} href={item.url} className="text-lg hover:text-red-400 hover:underline">
                 {item.name}
                </Link>
-            ))}
+                 ))}
+
+            {session ? (
+              <div>
+      <button
+        id="basic-button"
+        aria-controls={open ? 'basic-menu' : undefined}
+        aria-haspopup="true"
+        aria-expanded={open ? 'true' : undefined}
+        onClick={handleClick}
+      >
+        <img src={session?.user?.image} alt={session?.user?.name.slice(0,1). toUpperCase()}  className='w-10 h-10 rounded-full' />
+      </button>
+      <Menu
+        id="basic-menu"
+        anchorEl={anchorEl}
+        open={open}
+        onClose={handleClose}
+        slotProps={{
+          list: {
+            'aria-labelledby': 'basic-button',
+          },
+        }}
+      >
+        <MenuItem onClick={handleClose}> <Link href={"/profile"}>Profile</Link></MenuItem>
+        <MenuItem onClick={handleClose}> <Link href={"/post-blog"}>Post your blog here</Link></MenuItem>
+        <MenuItem onClick={handleClose}> <button  onClick={() => signOut()}>Log Out</button></MenuItem>
+      </Menu>
+       </div>
+                ) : (
+            <Link
+            href={"/auth/login"}
+            className='text-lg hover:text-red-700 hover:underline'>
+            LogIn
+            </Link>
+            )}
             </div>
 
-            {/* desktop view */}
+            {/* mobile and tab view */}
             <div className="lg:hidden z-50">
                 <button onClick={()=> setNavOpen(!navOpen)} className="text-2xl">
                   {navOpen ? <IoMdCloseCircle /> : <RxDropdownMenu />} 
