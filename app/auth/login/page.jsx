@@ -1,9 +1,10 @@
+"use client"
 import React from "react";
 import { MdEmail } from "react-icons/md";
 import { FcGoogle } from "react-icons/fc";
 import { FaGithub } from "react-icons/fa6";
 import { FaInstagram } from "react-icons/fa";
-import { auth, signIn } from "@/auth";
+import { auth, signIn } from "next-auth/react";
 import { redirect } from "next/navigation";
 
 const page = async () => {
@@ -22,35 +23,44 @@ const page = async () => {
            Welcome! Log in to Blogora 
           </h1>
           <div className="w-full space-y-5 mt-17 max-md:px-2">
-            <button className="border flex items-center justify-center border-gray-200 w-full gap-5 py-4 text-xl md:text-2xl text-white hover:bg-stone-700">
-              Continue with Email
+            <form 
+            onSubmit={async (e) => {
+              e.preventDefault();
+              const email = e.target.email.value;
+              await signIn("email", { email, redirect: true, callbackUrl: "/" });
+            }}
+            >
+              <input
+              type="email" name="email" placeholder="Enter your email" className="w-full p-2 border rounded" required />
+            <button type="submit" className="border flex items-center justify-center border-gray-200 w-full gap-5 py-4 text-xl md:text-2xl text-white hover:bg-stone-700">
+              Login with Email
               <MdEmail />
               </button>
+            </form>
+
             <form
               action={async () => {
-                "use server";
                 await signIn("google");
               }}
             >
               <button className="border flex items-center justify-center border-gray-200 w-full gap-5 py-4  text-xl md:text-2xl text-white hover:bg-stone-700">
-                Continue with Google
+                Login with Google
                 <FcGoogle />
               </button>
             </form>
 
             <form
               action={async () => {
-                "use server";
                 await signIn("github");
               }}
             >
             <button type="submit" className="border flex items-center justify-center border-gray-200 w-full gap-5 py-4 text-xl md:text-2xl text-white hover:bg-stone-700">
-              Continue with Github
+              Login with Github
               <FaGithub />
             </button>
             </form>
             <button className="border flex items-center justify-center border-gray-200 w-full gap-5 py-4 text-xl md:text-2xl text-white hover:bg-stone-700">
-              Continue with Instagram
+              Login with Instagram (coming soon)
               <FaInstagram />
             </button>
           </div>
