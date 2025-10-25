@@ -56,17 +56,16 @@ const PostBlog = ({session}) => {
     }
   };
   return (
-    <main className="min-h-dvh bg-stone-200">
-      <div className="min-h-dvh w-full h-full">
-        <div className="flex items-center justify-center flex-col gap-5 lg:p-6 p-3 space-y-10">
-          <h1 className="md:text-3xl text-xl font-extrabold text-gray-900 uppercase">
+    <main className="min-h-dvh bg-gray-50 flex flex-col items-center justify-center px-5 py-12">
+        <div className="max-w-2xl w-full bg-white rounded-xl shadow-md p-8">
+          <h1 className="text-3xl font-bold text-center text-indigo-700 mb-3">
             Post your Blog Here
           </h1>
-          <p className="text-red-600 font-semibold mt-3 md:text-xl text-base">
-            Hey! What's up with you?? What's news? Care to share? We just might feature you on our page...Please sip the
-            tea with us in the box below
+          <p className="text-center text-gray-600 mb-8">
+            Hey there! What's up with you? Got some news, thoughts, or stories to share?
+            <br />Drop it below and you just might get featured on <span className="font-semibold text-indigo-600">Blogora</span>!
           </p>
-        </div>
+
         <section className="md:max-w-2xl w-full mx-auto shadow-md p-3 rounded-md bg-white/70">
           <Formik
             initialValues={initialValues}
@@ -75,22 +74,26 @@ const PostBlog = ({session}) => {
           >
             <Form className="space-y-5">
               <div>
-                <label className="text-base font-semibold">Category</label>
+                <label className="block text-gray-700 font-medium mb-2">Category</label>
                 <Field
                   name="category"
                   as="select"
-                  className="w-full outline-none border border-gray-200 px-5 py-3 rounded-md bg-gray-50"
+                  className="w-full outline-none border border-gray-300 p-3 rounded-lg bg-gray-50 focus:ring-2 focus:ring-indigo-500"
                 >
                   <option value="" disabled>
                     -- Select a category --
                   </option>
                   <option value="Tech">Tech</option>
+                  <option value="Creativity">Creativity</option>
                   <option value="News">News</option>
                   <option value="Lifestyle">Lifestyle</option>
-                  <option value="Sports">Sports</option>
-                  <option value="Politics">Politics</option>
+                  <option value="Wellness">Wellness</option>
+                  <option value="Trending">Trending</option>
                   <option value="Entertainment">Entertainment</option>
+                  <option value="Celebrity Tea">Celebrity Tea</option>
                   <option value="Writing">Writing</option>
+                  <option value="Politics">Politics</option>
+                  <option value="Religion">Religion</option>
                   <option value="Finance">Finance</option>
                   <option value="Business">Business</option>
                 </Field>
@@ -101,13 +104,13 @@ const PostBlog = ({session}) => {
                 />
               </div>
               <div>
-                <label className="text-base font-semibold">
+                <label className="block text-gray-700 font-medium mb-2">
                   Post your blog
                 </label>
                 <Field
                   name="blog"
                   as="textarea"
-                  className="w-full outline-none border border-gray-200 px-5 py-3 h-60 rounded-md bg-white"
+                  className="w-full outline-none border border-gray-300 p-3 bg-gray-50 focus:ring-2 focus:ring-indigo-500 rounded-lg bg-white"
                 />
                 <ErrorMessage
                   name="blog"
@@ -119,7 +122,7 @@ const PostBlog = ({session}) => {
               <div className="flex justify-end">
                 <button
                   type="submit"
-                  className="bg-red-700 hover:bg-red-800 transition-colors duration-500 text-white text-xl rounded-md py-4 px-5 flex items-center gap-2"
+                  className="bg-indigo-600 w-full text-white font-semibold py-3 rounded-lg hover:bg-red-300 transition"
                 >
                   {loading ? (
                     <LuLoaderCircle className="animate-spin text-2xl" />
