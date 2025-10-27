@@ -1,4 +1,4 @@
-import { auth } from '@/auth';
+import { auth, signOut } from '@/auth';
 import UpdateProfile from '@/components/UpdateProfile';
 import { redirect } from 'next/navigation';
 import React from 'react';
@@ -13,18 +13,20 @@ const page = async () => {
       redirect("/auth/login")
     }
   return (
-    <main className='min-h-dvh'>
-     <div className="flex flex-col items-center justify-center mt-10">
-      <h1 className='font-bold text-gray-500 text-3xl md:text-4xl flex text-center'>
-        Profile
-      </h1>
-       <div className="w-full h-full mt-17 flex flex-col items-center justify-center gap-8 md:max-w-4xl p-3 mx-auto shadow-md rounded-lg relative">
+    <main className='min-h-dvh bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200 py-12 px-4'>
+     <div className="max-w-3xl mx-auto bg-white rounded-xl shadow-md p-8 flex flex-col items-center mt-2">
+       <div className="relative mb-6">
         <img src={session?.user?.image} 
         alt={session?.user?.name.slice(0, 1).toUpperCase()}
-        className="w-24 h-24 rounded-full sticky top-0"/>
+        className="w-28 h-28 rounded-full object-cover border-4 border-indigo-500 shadow-md"/>
+        </div>
 
-        <h1 className="text-3xl font-light">{session?.user?.name}</h1>
+        <h1 className="text-2xl md:text-3xl font-semibold text-gray-800">{session?.user?.name || "User"}</h1>
         <p>{session?.user?.email}</p>
+        <div className='mt-10 w-full'>
+         <h2 className='text-xl font-semibold text-gray-700 mb-4 text-center'>Update Your Profile</h2> 
+         <UpdateProfile uid={uid} userName={userName} />
+        </div>
 
           <form
       action={async () => {
@@ -32,15 +34,12 @@ const page = async () => {
         await signOut()
       }}
      >
-      <button className='flex justify-end gap-3 bg-red-500 text-white px-10 py-4 hover:bg-blue-800 transition-all duration-500'>
+      <button className='mt-8 flex items-center justify-end gap-3 bg-red-500 text-white px-8 py-3 rounded-md hover:bg-red-800 transition-all duration-300 font-medium shadow-sm'>
         <FiLogOut />
        Log Out
       </button>
     </form>
-    
-    <UpdateProfile uid={uid} userName={userName} />
-       </div>
-    </div> 
+       </div> 
     </main>
   )
 }

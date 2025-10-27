@@ -1,5 +1,6 @@
 "use client";
 import { db } from "@/lib/firebaseconfig";
+import { CircularProgress } from "@mui/material";
 import { collection, getDocs, doc, deleteDoc } from "firebase/firestore";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
@@ -7,10 +8,12 @@ import { MdOutlineKeyboardTab } from "react-icons/md";
 import { RiDeleteBin6Line } from "react-icons/ri";
 
 const Blog= ({session}) => {
-
   const [blogs, setBlogs] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   const fetchBlogs = async () => {
-    const blogArray = [];
+    try {
+      const blogArray = [];
     const querySnapShot = await getDocs(collection(db, "blog"));
     querySnapShot.forEach((doc) => {
       // doc.data() is never undefined for query doc snapshots
@@ -24,6 +27,11 @@ const Blog= ({session}) => {
     });
     console.log(blogArray);
     setBlogs(blogArray);
+    } catch (error) {
+      console.error("Error loading blogs:", error);
+    } finally {
+      setLoading(false);
+    } 
   };
   useEffect(() => {
     fetchBlogs();
@@ -38,10 +46,16 @@ const Blog= ({session}) => {
         }
     }
   return (
-    <main className="min-h-dvh">
-      <section className="grid grid-cols-1 md:grid-cols-2 gap-3 p-3">
-        {blogs.map((rev, i) => (
-          <div key={i} className="space-y-2 shadow-md p-4 rounded-md bg-white">
+    <main className="min-h-dvh bg-gray-50 py-8 px-4">
+      {loading ? (
+        <div className="flex items-center justify-center h[70vh]">
+        <CircularProgress size={50} thickness={4} color="success" />
+        </div>
+      ) : (
+      <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+        {blogs.length > 0 ? (
+         blogs.map((rev, i) => (
+          <div key={i} className="space-y-2 shadow-md p-4 rounded-md bg-white border border-gray-100 hover:shadow-lg transition-shadow duration-300">
             <div className="flex items-center gap-2">
               <img
                 src={rev.img}
@@ -55,7 +69,7 @@ const Blog= ({session}) => {
                     <RiDeleteBin6Line />
                 </button>
              ): null}
-            <p className="text-lg">{rev.category}</p>
+            <p className="text-lg font-semibold text-indigo-600">{rev.category}</p>
             <p className="line-clamp-4 text-gray-700">{rev.blog}</p>
             <div className="flex justify-between items-center text-xs text-gray-500">
               <p>
@@ -72,8 +86,12 @@ const Blog= ({session}) => {
               </Link>
             </div>
           </div>
-        ))}
+        ))
+      ) : (
+        <p className="text-gray-500 text-center mt-10 col-span-full">No blog post available.</p>
+      )}
       </section>
+      )}
     </main>
   );
 };
