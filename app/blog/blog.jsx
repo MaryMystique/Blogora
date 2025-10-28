@@ -52,7 +52,7 @@ const Blog= ({session}) => {
         <CircularProgress size={50} thickness={4} color="success" />
         </div>
       ) : (
-      <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+      <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
         {blogs.length > 0 ? (
          blogs.map((rev, i) => (
           <div key={i} className="space-y-2 shadow-md p-4 rounded-md bg-white border border-gray-100 hover:shadow-lg transition-shadow duration-300">
