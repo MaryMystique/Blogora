@@ -17,7 +17,7 @@ export function EmailLogin() {
     initialValues: { email: "" },
     onSubmit: async (values) => {
       console.log("Attempting to sign in with email:", values.email);
-      const res = signIn("nodemailer", { email: values.email, redirect: false });
+      const res = await signIn("nodemailer", { email: values.email, redirect: false });
       console.log("Sign in response", res);
 
       if (res) {
