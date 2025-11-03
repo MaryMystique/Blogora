@@ -13,7 +13,10 @@ export default function Home() {
    const [loading, setLoading] = useState(true);
    const [currentWord, setCurrentWord] = useState(0);
    const [searchQuery, setSearchQuery] = useState("");
-   const words = ['Read', 'Share', 'Discover', 'Inspire'];
+   
+   const words = ['Read', 'Share', 'Discover', 'Inspire']; 
+
+    // Animated word rotation
    useEffect(() => {
     const interval = setInterval(() => {
       setCurrentWord((prev) => (prev + 1) % words.length);
@@ -44,6 +47,8 @@ export default function Home() {
     useEffect(() => {
       fetchBlogs();
     }, []);
+
+    // Filter blogs based on search query
     const filteredBlogs = blogs.filter(blog =>
       blog.blog?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       blog.author?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -51,6 +56,7 @@ export default function Home() {
     );
   return (
      <main className="min-h-dvh bg-gray-50">
+      {/* Hero section */}
       <section className="py-20 px-5 text-center relative bg-gradient-to-br from-indigo-600 via-purple-600 to-indigo-800 text-white overflow-hidden">
      <div className="absolute top-0 right-0 w-96 h-96 bg-purple-500 rounded-full blur-3xl opacity-20"></div>
    <div className="absolute bottom-0 left-0 w-96 h-96 bg-indigo-500 rounded-full blur-3xl opacity-20"></div>
@@ -78,10 +84,10 @@ export default function Home() {
               placeholder="Search posts by title, author, or category..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-4 py-4 rounded-full text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-300 shadow-lg"
-            />
+              className="w-full pl-12 pr-4 py-4 rounded-full text-white focus:outline-none focus:ring-2 focus:ring-purple-300 shadow-lg bg-white/10 placeholder-gray-300" />
           </div>
         </div>
+        {/* Quick category tags */}
         <div className="flex flex-wrap gap-3 justify-center">
           <span className="text-purple-200 text-sm">Popular:</span>
           <button
@@ -109,11 +115,12 @@ export default function Home() {
         </div>
      </div>
   </section>
+    {/* Blog grid section */}
   <section className="mt-15 px-5 md:px-10 py-10">
     {searchQuery && (
       <div className="mb-6 text-center">
         <p className="text-gray-600">
-          {filteredBlogs.length} result{filteredBlogs.length !== 1 ? 's' : ''} found for "<span className="font-semibold text-indigo-600">{searchQuery}</span>"
+          {filteredBlogs.length} result{filteredBlogs.length !== 1 ? 's' : ''} found for {""}<span className="font-semibold text-indigo-600">{searchQuery}</span>"
         </p>
       </div>
     )}
@@ -136,8 +143,9 @@ export default function Home() {
         ))}
       </div>
      ) : filteredBlogs.length > 0 ? (
+      <>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-        {filteredBlogs.map((rev, i) => (
+        {filteredBlogs.slice(0, 6).map((rev, i) => (
           <div key={i} className="group bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 hover:border-indigo-200">
             <div className="flex items-center gap-3 p-4 border-b border-gray-100">
               <img
@@ -169,6 +177,16 @@ export default function Home() {
           </div>
         ))}
       </div>
+      {/* View All Posts */}
+      {filteredBlogs.length > 6 && !searchQuery && (
+        <div className="text-center mt-12">
+         <Link href="/categories" className="inline-flex items-center gap-2 px-8 py-4 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 transition-all shadow-lg hover:shadow-xl font-semibold"> 
+        View All Posts
+        <MdOutlineKeyboardTab className="text-xl" />
+        </Link>
+        </div>
+      )}
+      </>
     ) : (
       <div className="text-center mt-20">
         <p className="text-gray-500 text-lg">
@@ -186,6 +204,6 @@ export default function Home() {
       </div>
     )}
   </section>
-</main>
-);
+ </main>
+ );
 }
