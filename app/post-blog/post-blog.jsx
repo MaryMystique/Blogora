@@ -24,12 +24,17 @@ const PostBlog = ({ session }) => {
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
+
   const initialValues = {
     category: "",
+    title: "",
     blog: "",
   };
   const formValidation = Yup.object({
     category: Yup.string().required("Please select a category"),
+    title: Yup.string()
+    .required("Please add a title")
+    .min(10, "Title must be at least 10 characters"),
     blog: Yup.string()
       .required("Share your blog")
       .min(500, "Minimum of 500 characters required"),
@@ -38,19 +43,21 @@ const PostBlog = ({ session }) => {
     try {
       setLoading(true);
       const blogInfo = {
-        author: session?.user?.name || session?.user?.email,
-        img: session?.user?.image ?? "/df.png",
+        authorName: session?.user?.name || "Anonymous",
+        authorEmail: session?.user?.email || "N/A",
+        authorImage: session?.user?.image ?? "/df.png",
+        authorId: session?.user?.id || session?.user?.email, // fallback if UID not provided
         timestamp: new Date().toLocaleString(),
         ...values,
       };
-      const docRef = await addDoc(collection(db, "blog"), blogInfo);
+      await addDoc(collection(db, "blog"), blogInfo);
       //   console.log("Document written with ID: ", docRef.id);
-      console.log(blogInfo);
+      console.log("Blog saved:", blogInfo);
       handleOpen();
       resetForm();
     } catch (error) {
-      console.error("Error adding data", error);
-      alert("Oops, an error occurred");
+      console.error("Error adding blog", error);
+      alert("Oops, an error occurred while posting your blog.");
     } finally {
       setLoading(false);
     }
@@ -109,13 +116,25 @@ const PostBlog = ({ session }) => {
                 />
               </div>
               <div>
+                <label className="block text-gray-700 font-medium mb-2">Blog Title</label>
+                <Field 
+                name="title" 
+                type="text" 
+                placeholder="Enter your blog title"  
+                className="w-full outline-none border border-gray-300 p-3 bg-gray-50 focus:ring-2 focus:ring-indigo-500 rounded-lg"
+                /> 
+                <ErrorMessage name="title" component="p" className="text-sm text-red-500" />
+              </div>
+              <div>
                 <label className="block text-gray-700 font-medium mb-2">
                   Post your blog
                 </label>
                 <Field
                   name="blog"
                   as="textarea"
+                  rows="10"
                   className="w-full outline-none border border-gray-300 p-3 bg-gray-50 focus:ring-2 focus:ring-indigo-500 rounded-lg bg-white"
+                  placeholder="Start writing your story..."
                 />
                 <ErrorMessage
                   name="blog"
@@ -127,10 +146,10 @@ const PostBlog = ({ session }) => {
               <div className="flex justify-end">
                 <button
                   type="submit"
-                  className="bg-indigo-600 w-full text-white font-semibold py-3 rounded-lg hover:bg-red-300 transition"
+                  className="bg-indigo-600 w-full text-white font-semibold py-3 rounded-lg hover:bg-indigo-600 transition"
                 >
                   {loading ? (
-                    <LuLoaderCircle className="animate-spin text-2xl" />
+                    <LuLoaderCircle className="animate-spin text-2xl mx-auto" />
                   ) : (
                     "Share your Blog"
                   )}

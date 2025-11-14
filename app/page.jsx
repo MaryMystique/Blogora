@@ -149,7 +149,7 @@ export default function Home() {
           <div key={i} className="group bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 hover:border-indigo-200">
             <div className="flex items-center gap-3 p-4 border-b border-gray-100">
               <img
-                src={rev.img}
+                src={rev.img || "/AI.jpg"}
                 alt="user"
                 className="w-10 h-10 rounded-full object-cover ring-2 ring-gray-100"
               />
@@ -180,7 +180,7 @@ export default function Home() {
       {/* View All Posts */}
       {filteredBlogs.length > 6 && !searchQuery && (
         <div className="text-center mt-12">
-         <Link href="/categories" className="inline-flex items-center gap-2 px-8 py-4 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 transition-all shadow-lg hover:shadow-xl font-semibold"> 
+         <Link href="/blog" className="inline-flex items-center gap-2 px-8 py-4 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 transition-all shadow-lg hover:shadow-xl font-semibold"> 
         View All Posts
         <MdOutlineKeyboardTab className="text-xl" />
         </Link>
