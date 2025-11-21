@@ -8,6 +8,7 @@ import { db } from "@/lib/firebaseconfig";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Modal from "@mui/material/Modal";
+
 const style = {
   position: "absolute",
   top: "50%",
@@ -19,6 +20,7 @@ const style = {
   boxShadow: 24,
   p: 4,
 };
+
 const PostBlog = ({ session }) => {
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
@@ -30,28 +32,37 @@ const PostBlog = ({ session }) => {
     title: "",
     blog: "",
   };
+
   const formValidation = Yup.object({
     category: Yup.string().required("Please select a category"),
     title: Yup.string()
-    .required("Please add a title")
-    .min(10, "Title must be at least 10 characters"),
+      .required("Please add a title")
+      .min(10, "Title must be at least 10 characters"),
     blog: Yup.string()
       .required("Share your blog")
       .min(500, "Minimum of 500 characters required"),
   });
+
   const handleSubmit = async (values, { resetForm }) => {
     try {
       setLoading(true);
+      
+      // ✅ FIXED: Use email as unique identifier (consistent across your app)
+      const userId = session?.user?.id;
+      
       const blogInfo = {
-        authorName: session?.user?.name || "Anonymous",
+        author: session?.user?.name || "Anonymous",
         authorEmail: session?.user?.email || "N/A",
-        authorImage: session?.user?.image ?? "/df.png",
-        authorId: session?.user?.id || session?.user?.email, // fallback if UID not provided
+        img: session?.user?.image ?? "/df.png",
+        userId: userId, // ✅ FIXED: Changed from authorId to userId
         timestamp: new Date().toLocaleString(),
+        likes: 0, // ✅ ADDED: Initialize likes
+        likedBy: [], // ✅ ADDED: Initialize likedBy array
+        views: 0, // ✅ ADDED: Initialize views
         ...values,
       };
+      
       await addDoc(collection(db, "blog"), blogInfo);
-      //   console.log("Document written with ID: ", docRef.id);
       console.log("Blog saved:", blogInfo);
       handleOpen();
       resetForm();
@@ -62,6 +73,7 @@ const PostBlog = ({ session }) => {
       setLoading(false);
     }
   };
+
   return (
     <main className="min-h-dvh bg-gray-50 flex flex-col items-center justify-center px-5 py-12">
       <div className="max-w-2xl w-full bg-white rounded-xl shadow-md p-8">
@@ -116,14 +128,20 @@ const PostBlog = ({ session }) => {
                 />
               </div>
               <div>
-                <label className="block text-gray-700 font-medium mb-2">Blog Title</label>
-                <Field 
-                name="title" 
-                type="text" 
-                placeholder="Enter your blog title"  
-                className="w-full outline-none border border-gray-300 p-3 bg-gray-50 focus:ring-2 focus:ring-indigo-500 rounded-lg"
-                /> 
-                <ErrorMessage name="title" component="p" className="text-sm text-red-500" />
+                <label className="block text-gray-700 font-medium mb-2">
+                  Blog Title
+                </label>
+                <Field
+                  name="title"
+                  type="text"
+                  placeholder="Enter your blog title"
+                  className="w-full outline-none border border-gray-300 p-3 bg-gray-50 focus:ring-2 focus:ring-indigo-500 rounded-lg"
+                />
+                <ErrorMessage
+                  name="title"
+                  component="p"
+                  className="text-sm text-red-500"
+                />
               </div>
               <div>
                 <label className="block text-gray-700 font-medium mb-2">
@@ -133,7 +151,7 @@ const PostBlog = ({ session }) => {
                   name="blog"
                   as="textarea"
                   rows="10"
-                  className="w-full outline-none border border-gray-300 p-3 bg-gray-50 focus:ring-2 focus:ring-indigo-500 rounded-lg bg-white"
+                  className="w-full outline-none border border-gray-300 p-3 bg-gray-50 focus:ring-2 focus:ring-indigo-500 rounded-lg"
                   placeholder="Start writing your story..."
                 />
                 <ErrorMessage
@@ -142,11 +160,10 @@ const PostBlog = ({ session }) => {
                   className="text-sm text-red-500"
                 />
               </div>
-              {/* Submit */}
               <div className="flex justify-end">
                 <button
                   type="submit"
-                  className="bg-indigo-600 w-full text-white font-semibold py-3 rounded-lg hover:bg-indigo-600 transition"
+                  className="bg-indigo-600 w-full text-white font-semibold py-3 rounded-lg hover:bg-indigo-700 transition"
                 >
                   {loading ? (
                     <LuLoaderCircle className="animate-spin text-2xl mx-auto" />
@@ -167,7 +184,7 @@ const PostBlog = ({ session }) => {
       >
         <Box sx={style}>
           <Typography id="modal-modal-title" variant="h6" component="h2">
-            Post successfull
+            Post successful
           </Typography>
           <Typography id="modal-modal-description" sx={{ mt: 2 }}>
             Your Blog has been posted successfully.
@@ -177,4 +194,5 @@ const PostBlog = ({ session }) => {
     </main>
   );
 };
+
 export default PostBlog;
