@@ -2,32 +2,36 @@
 import React, { useEffect, useState } from 'react'
 import { getDoc, doc, updateDoc, increment, deleteDoc } from "firebase/firestore";
 import { db } from '@/lib/firebaseconfig';
-import { getAuth } from "firebase/auth";
 import { ArrowLeft, Eye, Heart, Trash2 } from 'lucide-react';
-import { onAuthStateChanged} from "firebase/auth";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
+import { use } from "react";
 
 export default function BlogDetails({ params }) {
-  const { id } = React.use(params);
+  const { id: blogId } = use(params);
+  const { data: session } = useSession();
+  const user = session?.user || null;
   const [blog, setBlog] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState(null);
-  
-  // Track current user
-  useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (u) => setUser(u));
-    return () => unsub();
-  }, []);
+
+  console.log(session);
 
   // Fetch blog
   useEffect(() => {
     const fetchBlog = async () => {
       try {
-        const docRef = doc(db, "blog", id);
+        const docRef = doc(db, "blog", blogId);
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
-          const data = { id: docSnap.id, ...docSnap.data() };
+          const data = { 
+            id: docSnap.id, 
+            ...docSnap.data(),
+            // Initialize likedBy and likes if they don't exist
+            likedBy: docSnap.data().likedBy || [],
+            likes: docSnap.data().likes || 0,
+            views: docSnap.data().views || 0,
+          };
           setBlog(data);
         }
       } catch (error) {
@@ -37,61 +41,91 @@ export default function BlogDetails({ params }) {
       }
     };
     fetchBlog();
-  }, [id]);
+  }, [blogId]);
 
   // Increment views if first visit
   useEffect(() => {
     if (!blog) return;
 
-    const key = `viewed_${id}`;
+    const key = `viewed_${blogId}`;
     if (localStorage.getItem(key)) return;
 
     localStorage.setItem(key, "true");
 
-    updateDoc(doc(db, "blog", id), {
+    updateDoc(doc(db, "blog", blogId), {
       views: increment(1),
     }).catch((err) => console.error("Error updating views:", err));
-  }, [blog, id]);
+  }, [blog, blogId]);
 
   // Handle Like
   const handleLike = async () => {
-    if (!user) return alert("Login to like posts");
+    if (!user) {
+      alert("Login to like posts");
+      return;
+    }
 
-    const blogRef = doc(db, "blog", id);
-    const likedBy = blog.likedBy || [];
-    const hasLiked = likedBy.includes(user.uid);
-    
-    try {
-     await updateDoc(blogRef, {
-      likes: hasLiked ? increment(-1) : increment(1),
-      likedBy: hasLiked
-      ? likedBy.filter((uid) => uid !== user.uid)
-      : [...likedBy, user.uid],
-     });
-     setBlog((prev) => ({
+    if (!user.id) {
+      console.error("User ID is missing");
+      return;
+    }
+
+    const userId = user.id;
+    const blogRef = doc(db, "blog", blogId);
+
+    // Safely check if user has already liked
+    const currentLikedBy = blog.likedBy || [];
+    const alreadyLiked = currentLikedBy.includes(userId);
+
+    const newLikedBy = alreadyLiked
+      ? currentLikedBy.filter((id) => id !== userId)
+      : [...currentLikedBy, userId];
+
+    const newLikes = alreadyLiked ? (blog.likes || 0) - 1 : (blog.likes || 0) + 1;
+
+    // Optimistic UI update
+    setBlog((prev) => ({
       ...prev,
-      likes: hasLiked ? prev.likes -1 : prev.likes + 1,
-      likedBy: hasLiked
-      ? prev.likedBy.filter((uid) => uid !== user.uid)
-      : [...likedBy, user.uid],
-     })); 
-    } catch (err) {
-     console.error("Error liking post:", err); 
+      likedBy: newLikedBy,
+      likes: newLikes,
+    }));
+
+    try {
+      await updateDoc(blogRef, {
+        likedBy: newLikedBy,
+        likes: newLikes,
+      });
+    } catch (error) {
+      console.error("Failed to update likes:", error);
+
+      // Revert UI if failure
+      setBlog((prev) => ({
+        ...prev,
+        likedBy: currentLikedBy,
+        likes: blog.likes,
+      }));
+      
+      alert("Failed to update like. Please try again.");
     }
   };
-  // Handle Delete
-const handleDelete = async () => {
-  if (!user || user.uid !== blog.userId)
-    return alert("You are not allowed to delete this post.");
 
-  if (!confirm("Are you sure you want to delete to delete this post?")) return;
-   try {
-    await deleteDoc(doc(db, "blog", id));
-    window.location.href = "/blog";
-   } catch (err) {
-    console.error("Error deleting blog:", err);
-   } 
+  // Handle Delete
+  const handleDelete = async () => {
+    if (!user?.id || user.id !== blog.userId) {
+      alert("You are not allowed to delete this post.");
+      return;
+    }
+
+    if (!confirm("Are you sure you want to delete this post?")) return;
+    
+    try {
+      await deleteDoc(doc(db, "blog", blogId));
+      window.location.href = "/blog";
+    } catch (err) {
+      console.error("Error deleting blog:", err);
+      alert("Failed to delete post. Please try again.");
+    }
   };
+
   // Loading Spinner
   if (loading) {
     return (
@@ -99,11 +133,13 @@ const handleDelete = async () => {
         <div className='animate-spin w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full'></div>
       </div>
     );
-}
- if (!blog)
-  return (
-    <div className='text-center text-gray-600 mt-20'>Blog not found.</div>
-  );
+  }
+
+  if (!blog) {
+    return (
+      <div className='text-center text-gray-600 mt-20'>Blog not found.</div>
+    );
+  }
 
   return (
     <main className='min-h-dvh bg-gray-50 py-10 px-4'>
@@ -112,46 +148,66 @@ const handleDelete = async () => {
         <Link href="/blog" className="inline-flex items-center gap-2 text-blue-600 hover:text-purple-600 transition mb-6">
           <ArrowLeft className='w-5 h-5' /> Back to Blogs
         </Link>
+
         {/* Main Card */}
         <div className='bg-white shadow-xl rounded-2xl p-8 border border-gray-100'>
           {/* Category */}
-        <div className="inline-block px-4 py-1 text-sm font-semibold rounded-full bg-blue-100 text-blue-700 mb-4">
-          {blog.category}
-          </div>
-         {/* Title */}
+          {blog.category && (
+            <div className="inline-block px-4 py-1 text-sm font-semibold rounded-full bg-blue-100 text-blue-700 mb-4">
+              {blog.category}
+            </div>
+          )}
+
+          {/* Title */}
           <h1 className="text-3xl md:text-4xl font-bold text-gray-900 leading-tight mb-6">
             {blog.title || 'Untitled Blog Post'}
           </h1>
-            {/* Author Row */}
+
+          {/* Author Row */}
           <div className="flex items-center gap-4 mb-8">
-            <img src={blog.img || "/df.png"} alt={blog.author}
-            className='w-14 h-14 rounded-full object-cover shadow' />
-          <div>
-          <p className="font-semibold text-gray-800">{blog.author}</p>
-          <p className="text-sm text-gray-500">{blog.timestamp}</p>
+            <img 
+              src={blog.img || "/df.png"} 
+              alt={blog.author || "Author"}
+              className='w-14 h-14 rounded-full object-cover shadow' 
+            />
+            <div>
+              <p className="font-semibold text-gray-800">{blog.author || "Anonymous"}</p>
+              {blog.timestamp && (
+                <p className="text-sm text-gray-500">{blog.timestamp}</p>
+              )}
+            </div>
           </div>
-          </div>
+
           {/* Cover Image */}
           {blog.coverImage && (
-            <img src={blog.coverImage}
-            alt='Cover Image'
-            className='w-full rounded-xl mb-8 shadow' />
+            <img 
+              src={blog.coverImage}
+              alt='Cover Image'
+              className='w-full rounded-xl mb-8 shadow' 
+            />
           )}
+
           {/* Stats Row */}
           <div className='flex items-center justify-between mb-8'>
             <div className='flex items-center gap-6 text-gray-700'>
-              
               {/* Likes */}
-              <button onClick={handleLike}
-              className={`flex items-center gap-1 ${
-                blog.likedBy?.includes(user?.uid)
-                ? "text-red-600"
-                : "text-gray-700"
-              }`} >
-                <Heart size={22} />
+              <button
+                onClick={handleLike}
+                disabled={!user}
+                className={`flex items-center gap-1 transition ${
+                  (blog.likedBy || []).includes(user?.id)
+                    ? "text-red-600"
+                    : "text-gray-700"
+                } ${!user ? "opacity-50 cursor-not-allowed" : "hover:text-red-600"}`}
+                title={!user ? "Login to like posts" : ""}
+              >
+                <Heart 
+                  size={22} 
+                  fill={(blog.likedBy || []).includes(user?.id) ? "red" : "none"} 
+                />
                 {blog.likes || 0}
               </button>
-              
+
               {/* Views */}
               <div className='flex items-center gap-1'>
                 <Eye size={22} />
@@ -160,9 +216,11 @@ const handleDelete = async () => {
             </div>
 
             {/* Delete button (only owner) */}
-            {user?.uid === blog.userId && (
-              <button onClick={handleDelete}
-              className='text-red-600 hover:text-red-800 flex items-center gap-1'>
+            {user?.id === blog.userId && (
+              <button 
+                onClick={handleDelete}
+                className='text-red-600 hover:text-red-800 flex items-center gap-1 transition'
+              >
                 <Trash2 size={22} /> Delete
               </button>
             )}
@@ -173,11 +231,10 @@ const handleDelete = async () => {
 
           {/* Body */}
           <article className='prose prose-lg max-w-none text-gray-800 leading-relaxed whitespace-pre-line'>
-            {blog.blog}
+            {blog.blog || "No content available."}
           </article>
-          </div>
-          </div>
+        </div>
+      </div>
     </main>
   );
 }
-
