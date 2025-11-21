@@ -1,9 +1,9 @@
-import NextAuth from "next-auth"
+import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google"; 
 import GithubProvider from "next-auth/providers/github";
-import { FirestoreAdapter } from "@auth/firebase-adapter"
-import { cert } from "firebase-admin/app"
-import Nodemailer from "next-auth/providers/nodemailer"
+import { FirestoreAdapter } from "@auth/firebase-adapter";
+import { cert } from "firebase-admin/app";
+import Nodemailer from "next-auth/providers/nodemailer";
  
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
