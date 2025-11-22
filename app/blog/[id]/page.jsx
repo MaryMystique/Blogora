@@ -206,7 +206,7 @@ export default function BlogDetails({ params }) {
                   fill={(blog.likedBy || []).includes(user?.id) ? "red" : "none"} 
                 />
                 {blog.likes || 0}
-                </span>
+                
               </button>
 
               {/* Views */}
