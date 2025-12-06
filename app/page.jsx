@@ -7,6 +7,7 @@ import React, { useEffect, useState } from "react";
 import { MdOutlineKeyboardTab } from "react-icons/md";
 import { Skeleton } from "@mui/material";
 import { IoSearchOutline } from "react-icons/io5";
+// changes
 
 export default function Home() {
    const [blogs, setBlogs] = useState([]);
@@ -207,3 +208,4 @@ export default function Home() {
  </main>
  );
 }
+
