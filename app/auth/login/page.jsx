@@ -16,7 +16,7 @@ const page = async () => {
   console.log(session);
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-indigo-700 via-purple-700 to-indigo-900 flex items-center justify-center px-4">
+    <main className="min-h-screen bg-linear-to-br from-indigo-700 via-purple-700 to-indigo-900 flex items-center justify-center px-4">
       <section className="relative w-full max-w-md bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl text-white p-8 text-center space-y-6">
         <div className="space-y-2">
           <h1 className="font-extrabold text-3xl md:text-4xl tracking-tight">
